@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from "motion/react";
+import React, { useEffect, useState, useRef } from 'react';
+import { motion } from "framer-motion";
 import { $crud } from '../../factory/CrudFactory';
+import { FaCarSide } from "react-icons/fa";
+import { MdOutlineLocationOn, MdOutlineDirectionsCar, MdOutlineNumbers } from "react-icons/md";
+import { TbCarSuv } from "react-icons/tb";
 
 function LocationStep({ onNext }) {
-
   const [formData, setFormData] = useState({
     serviceType: 'taxi',
     location: '',
@@ -15,10 +17,16 @@ function LocationStep({ onNext }) {
 
   const [serviceLocations, setServiceLocation] = useState([]);
 
+  // Refs for each input
+  const locationRef = useRef();
+  const makeRef = useRef();
+  const modelRef = useRef();
+  const yearRef = useRef();
+  const numberRef = useRef();
+
   useEffect(() => {
     getServiceLocation();
   }, []);
-
 
   const getServiceLocation = async () => {
     try {
@@ -27,7 +35,8 @@ function LocationStep({ onNext }) {
     } catch (e) {
       console.log(e, "error");
     }
-  }
+  };
+
   const onSubmit = async () => {
     try {
       const { success } = await $crud.post('user/driver-profile', {
@@ -44,11 +53,10 @@ function LocationStep({ onNext }) {
     } catch (e) {
       console.log(e, "error");
     }
-  }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // onNext();
-    //  console.log( Object.values(formData).some((e)=>!e))
     onSubmit();
   };
 
@@ -57,6 +65,41 @@ function LocationStep({ onNext }) {
     backgroundColor: formData.serviceType === value ? '#F0F6FF' : '#fff',
     color: '#333',
   });
+
+  // Scroll input into view on focus (for mobile keyboard)
+  const scrollIntoViewIfNeeded = (ref) => {
+    if (ref && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  const inputWrap = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 4,
+  };
+
+  const iconStyle = {
+    position: 'absolute',
+    left: 14,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#003DA5',
+    fontSize: 20,
+    pointerEvents: 'none'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '14px 14px 14px 42px',
+    border: '1.5px solid #ddd',
+    borderRadius: '10px',
+    fontSize: '16px',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+    background: '#fff'
+  };
 
   return (
     <motion.form
@@ -70,6 +113,8 @@ function LocationStep({ onNext }) {
         margin: '0 auto',
         padding: '20px',
         fontFamily: 'Inter, sans-serif',
+        overflowY: 'auto',
+        paddingBottom: '30px', // for keyboard on mobile
       }}
     >
       {/* Service Type */}
@@ -82,9 +127,12 @@ function LocationStep({ onNext }) {
         <motion.h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '18px' }}>
           Register For
         </motion.h2>
-
         <div style={{ display: 'flex', gap: '12px' }}>
-          {['taxi', 'delivery', 'both'].map((type, index) => (
+          {[
+            { type: 'taxi', icon: <FaCarSide size={22} /> },
+            { type: 'delivery', icon: <TbCarSuv size={22} /> },
+            { type: 'both', icon: <MdOutlineDirectionsCar size={22} /> }
+          ].map(({ type, icon }, index) => (
             <motion.div
               key={type}
               whileTap={{ scale: 0.95 }}
@@ -106,10 +154,15 @@ function LocationStep({ onNext }) {
                 transition: 'all 0.2s ease',
                 fontWeight: '500',
                 fontSize: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
                 ...selectedStyle(type),
               }}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {icon}
+              <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
             </motion.div>
           ))}
         </div>
@@ -122,34 +175,24 @@ function LocationStep({ onNext }) {
         transition={{ delay: 0.2 }}
         style={{ marginBottom: '22px' }}
       >
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '15px', color: '#333' }}>
-          Service Location
-        </label>
-        <motion.select
-          type="text"
-          placeholder="Enter your location"
-          value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          whileTap={{ scale: 0.98 }}
-          whileFocus={{ scale: 1.01, borderColor: '#003DA5' }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          style={{
-            width: '100%',
-            padding: '13px 14px',
-            border: '1.5px solid #ccc',
-            borderRadius: '10px',
-            fontSize: '16px',
-            outline: 'none',
-          }}
-          required
-        >
-          <motion.option value=''>Select Location</motion.option>
-          {
-            serviceLocations.map(({ name, id }, index) =>
-              <motion.option key={index}>{name}</motion.option>
-            )
-          }
-        </motion.select>
+        <label htmlFor="location">Service Location</label>
+        <div style={inputWrap}>
+          <MdOutlineLocationOn style={iconStyle} />
+          <motion.select
+            ref={locationRef}
+            id="location"
+            onFocus={() => scrollIntoViewIfNeeded(locationRef)}
+            value={formData.location}
+            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+            style={inputStyle}
+            required
+          >
+            <option value="">Select Location</option>
+            {serviceLocations.map(({ name, id }) =>
+              <option key={id} value={name}>{name}</option>
+            )}
+          </motion.select>
+        </div>
       </motion.div>
 
       {/* Vehicle Make */}
@@ -159,27 +202,21 @@ function LocationStep({ onNext }) {
         transition={{ delay: 0.3 }}
         style={{ marginBottom: '22px' }}
       >
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '15px', color: '#333' }}>
-          Vehicle Make
-        </label>
-        <motion.input
-          type="text"
-          placeholder="e.g. Honda"
-          value={formData.vehicleMake}
-          onChange={(e) => setFormData({ ...formData, vehicleMake: e.target.value })}
-          whileTap={{ scale: 0.98 }}
-          whileFocus={{ scale: 1.01, borderColor: '#003DA5' }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          style={{
-            width: '100%',
-            padding: '13px 14px',
-            border: '1.5px solid #ccc',
-            borderRadius: '10px',
-            fontSize: '16px',
-            outline: 'none',
-          }}
-          required
-        />
+        <label htmlFor="vehicleMake">Vehicle Make</label>
+        <div style={inputWrap}>
+          <FaCarSide style={iconStyle} />
+          <motion.input
+            ref={makeRef}
+            id="vehicleMake"
+            onFocus={() => scrollIntoViewIfNeeded(makeRef)}
+            type="text"
+            placeholder="e.g. Honda"
+            value={formData.vehicleMake}
+            onChange={(e) => setFormData({ ...formData, vehicleMake: e.target.value })}
+            style={inputStyle}
+            required
+          />
+        </div>
       </motion.div>
 
       {/* Vehicle Model */}
@@ -189,27 +226,21 @@ function LocationStep({ onNext }) {
         transition={{ delay: 0.4 }}
         style={{ marginBottom: '22px' }}
       >
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '15px', color: '#333' }}>
-          Vehicle Model
-        </label>
-        <motion.input
-          type="text"
-          placeholder="e.g. Amaze"
-          value={formData.vehicleModel}
-          onChange={(e) => setFormData({ ...formData, vehicleModel: e.target.value })}
-          whileTap={{ scale: 0.98 }}
-          whileFocus={{ scale: 1.01, borderColor: '#003DA5' }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          style={{
-            width: '100%',
-            padding: '13px 14px',
-            border: '1.5px solid #ccc',
-            borderRadius: '10px',
-            fontSize: '16px',
-            outline: 'none',
-          }}
-          required
-        />
+        <label htmlFor="vehicleModel">Vehicle Model</label>
+        <div style={inputWrap}>
+          <MdOutlineDirectionsCar style={iconStyle} />
+          <motion.input
+            ref={modelRef}
+            id="vehicleModel"
+            onFocus={() => scrollIntoViewIfNeeded(modelRef)}
+            type="text"
+            placeholder="e.g. Amaze"
+            value={formData.vehicleModel}
+            onChange={(e) => setFormData({ ...formData, vehicleModel: e.target.value })}
+            style={inputStyle}
+            required
+          />
+        </div>
       </motion.div>
 
       {/* Vehicle Model Year */}
@@ -219,32 +250,26 @@ function LocationStep({ onNext }) {
         transition={{ delay: 0.5 }}
         style={{ marginBottom: '22px' }}
       >
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '15px', color: '#333' }}>
-          Vehicle Model Year
-        </label>
-        <motion.input
-          type='text'
-          placeholder="e.g. 2020"
-          maxLength={4}
-          value={formData.vehicleYear}
-          onChange={({ target: { value } }) => {
-            if (!isNaN(value)) {
-              setFormData({ ...formData, vehicleYear: value })
-            }
-          }}
-          whileTap={{ scale: 0.98 }}
-          whileFocus={{ scale: 1.01, borderColor: '#003DA5' }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          style={{
-            width: '100%',
-            padding: '13px 14px',
-            border: '1.5px solid #ccc',
-            borderRadius: '10px',
-            fontSize: '16px',
-            outline: 'none',
-          }}
-          required
-        />
+        <label htmlFor="vehicleYear">Vehicle Model Year</label>
+        <div style={inputWrap}>
+          <MdOutlineNumbers style={iconStyle} />
+          <motion.input
+            ref={yearRef}
+            id="vehicleYear"
+            onFocus={() => scrollIntoViewIfNeeded(yearRef)}
+            type='text'
+            placeholder="e.g. 2020"
+            maxLength={4}
+            value={formData.vehicleYear}
+            onChange={({ target: { value } }) => {
+              if (!isNaN(value)) {
+                setFormData({ ...formData, vehicleYear: value })
+              }
+            }}
+            style={inputStyle}
+            required
+          />
+        </div>
       </motion.div>
 
       {/* Vehicle Number */}
@@ -254,34 +279,26 @@ function LocationStep({ onNext }) {
         transition={{ delay: 0.6 }}
         style={{ marginBottom: '25px' }}
       >
-        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '15px', color: '#333' }}>
-          Vehicle Number
-        </label>
-        <motion.input
-          type="text"
-          placeholder="e.g. DL 01 AB 1234"
-          value={formData.vehicleNumber}
-          onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value })}
-          whileTap={{ scale: 0.98 }}
-          whileFocus={{ scale: 1.01, borderColor: '#003DA5' }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          style={{
-            width: '100%',
-            padding: '13px 14px',
-            border: '1.5px solid #ccc',
-            borderRadius: '10px',
-            fontSize: '16px',
-            outline: 'none',
-          }}
-          required
-        />
+        <label htmlFor="vehicleNumber">Vehicle Number</label>
+        <div style={inputWrap}>
+          <TbCarSuv style={iconStyle} />
+          <motion.input
+            ref={numberRef}
+            id="vehicleNumber"
+            onFocus={() => scrollIntoViewIfNeeded(numberRef)}
+            type="text"
+            placeholder="e.g. DL 01 AB 1234"
+            value={formData.vehicleNumber}
+            onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value })}
+            style={inputStyle}
+            required
+          />
+        </div>
       </motion.div>
 
       {/* Submit Button */}
       <motion.button
         type="submit"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
         whileHover={{ backgroundColor: '#002d7a' }}
         whileTap={{ scale: 0.95 }}
         transition={{

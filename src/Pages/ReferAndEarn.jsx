@@ -47,26 +47,25 @@ function ReferAndEarn() {
     getWalletDetails();
   }, []);
 
-
   const getReferralDetails = async () => {
     try {
-      const { data } = await $crud.get('get/referral');
+      const { data } = await $crud.get("get/referral");
       // console.log(data);
-      setReferralCode(data.refferal_code)
+      setReferralCode(data.refferal_code);
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   const getWalletDetails = async () => {
     try {
-      const data = await $crud.get('payment/wallet/history');
+      const data = await $crud.get("payment/wallet/history");
       console.log(data);
       setWalletDetails(() => data);
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(referralCode);
@@ -75,18 +74,13 @@ function ReferAndEarn() {
   };
 
   const onClickShareBtn = () => {
-    // navigator.share({
-    //   title: 'Item 1',
-    //   text: `Use ${referralCode} when you sign up and enjoy exclusive benefits! Don't miss out – sign up now and let's both earn rewards! 💸`,
-    //   // url: 'https://example.com/item1',
-    // })
     if (window.AndroidBridge && window.AndroidBridge.share) {
       const text = `Use ${referralCode} when you sign up and enjoy exclusive benefits! 💸`;
       window.AndroidBridge.share(text);
     } else {
       alert("Sharing not supported in this browser.");
     }
-  }
+  };
 
   return (
     <motion.div
@@ -109,10 +103,10 @@ function ReferAndEarn() {
           position: "relative",
           overflow: "hidden",
           color: "#fff",
-          height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
+          height: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         {/* Wave Images */}
@@ -172,7 +166,7 @@ function ReferAndEarn() {
           <span role="img" aria-label="wallet">
             👛
           </span>{" "}
-          Wallet  ₹ {walletDetails.wallet_balance ?? 0}
+          Wallet ₹ {walletDetails.wallet_balance ?? 0}
         </motion.button>
 
         {/* Referral Content */}
@@ -269,7 +263,30 @@ function ReferAndEarn() {
               Share
             </motion.button>
           </motion.div>
-
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            style={{
+              marginTop: "18px",
+              color: "#fff",
+              background: "rgba(0,61,165,0.10)",
+              borderRadius: "8px",
+              padding: "10px 16px",
+              fontSize: "15px",
+              fontWeight: 500,
+              maxWidth: "340px",
+              marginLeft: "auto",
+              marginRight: "auto",
+              boxShadow: "0 2px 8px rgba(0,61,165,0.06)",
+            }}
+          >
+            <span role="img" aria-label="info" style={{ marginRight: 6 }}>
+              ⏳
+            </span>
+            Referral rewards will be credited within <b>5-7 business days</b>{" "}
+            after your friend’s successful registration.
+          </motion.div>
           {/* Total Referrals Section */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -286,7 +303,6 @@ function ReferAndEarn() {
           </motion.div>
         </motion.div>
       </motion.div>
-
     </motion.div>
   );
 }

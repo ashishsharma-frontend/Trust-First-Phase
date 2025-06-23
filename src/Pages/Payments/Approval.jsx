@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { IoIosLogOut, } from "react-icons/io";
+import { IoIosLogOut } from "react-icons/io";
 import { IoLanguage } from "react-icons/io5";
 import Wave1 from "../../assets/Images/wave1.svg";
 import Wave2 from "../../assets/Images/wave2.svg";
@@ -27,15 +27,14 @@ const itemVariants = {
 };
 
 function PaymentProcessing() {
-
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
-    window.location.reload()
-  }
+    window.location.reload();
+  };
 
-  const getUser = () => JSON.parse(localStorage.getItem('user'));
+  const getUser = () => JSON.parse(localStorage.getItem("user"));
 
   return (
     <motion.div
@@ -58,6 +57,7 @@ function PaymentProcessing() {
           position: "relative",
           overflow: "hidden",
           color: "#fff",
+          paddingTop: "80px",
         }}
       >
         {/* Wave Images */}
@@ -88,14 +88,16 @@ function PaymentProcessing() {
           }}
         />
 
-        <div style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          display: 'flex',
-          gap: 15
-        }}>
-
+        <div
+          style={{
+            position: "absolute",
+            top: 20,
+            right: 20,
+            display: "flex",
+            gap: 15,
+            paddingTop: "30px",
+          }}
+        >
           <LanguageSwitchBtn />
 
           <motion.button
@@ -109,7 +111,7 @@ function PaymentProcessing() {
               padding: "6px 8px",
               fontSize: "18px",
               cursor: "pointer",
-              zIndex: 1
+              zIndex: 1,
             }}
           >
             <IoIosLogOut size={20} color="#FF0000" />
@@ -183,10 +185,7 @@ function PaymentProcessing() {
         </motion.div>
 
         {/* Status Message */}
-        <motion.div
-          variants={itemVariants}
-          style={{ marginBottom: "30px" }}
-        >
+        <motion.div variants={itemVariants} style={{ marginBottom: "30px" }}>
           <motion.h2
             variants={itemVariants}
             style={{
