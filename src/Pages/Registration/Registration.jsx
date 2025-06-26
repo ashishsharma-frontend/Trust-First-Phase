@@ -48,10 +48,17 @@ function Registration() {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    } else {
+    console.log('Current step:', currentStep); // Debug log
+    
+    if (currentStep === 1) {
+      // If on Profile step (step 1), go back to vehicle selection
       navigate("/vehical-selection");
+    } else if (currentStep === 2) {
+      // If on Location step (step 2), go back to Profile step (step 1)
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      // If on Document step (step 3), go back to Location step (step 2)
+      setCurrentStep(2);
     }
   };
 
